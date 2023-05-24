@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { checkWordInDB, getAllWordsFromDB, addWordToDB, addQueueDB, getQueueWordsDB, updateQueueDB,
-  deleteQueueDB } = require('./serverApi');
+  deleteQueueDB, updateApiCallsDB } = require('./serverApi');
 
 function filterWords(arr) {
   const newArr = [];
@@ -54,7 +54,7 @@ async function getWordData(obj) {
     const element = data[0];
 
 
-    if (element.meta.id === undefined) return
+    if (element.meta === undefined) return
     else {
       return {
         word: getWord(element),
@@ -70,6 +70,11 @@ async function getWordData(obj) {
 }
 
 async function adaptWords(words) {
+  //log api calls
+  const today = new Date().toISOString().slice(0, 10);
+  updateApiCallsDB({ date: today, words: words.length });
+
+  //get word data from dictionary api
   const data = await Promise.all(words.map(async (word) => {
     return await getWordData(word);
   }));
@@ -78,7 +83,6 @@ async function adaptWords(words) {
 
 //get words from series and add to queue
 async function getSeries() {
-
   try {
     const response = await fetch(`https://subtitles-for-youtube2.p.rapidapi.com/subtitles/lrNcx2D_FZI`, {
       headers: {
@@ -88,26 +92,13 @@ async function getSeries() {
     const seriesData = await response.json();
     const filteredWords = filterWords(seriesData);
 
-    //check if word in DB
-    //const wordsInDB = await checkWordInDB(filteredWords);
-    //const wordsForAdaptation = filteredWords.filter((i) => !wordsInDB.includes(i)).slice(0,800);
-
-    console.log(filteredWords.length);
     //save all words from subs to db. And then remove them after check in words api
     addQueueDB({ sourceId: 'lrNcx2D_FZI', words: filteredWords });
-
-    //query to dictionary if word isn't at DB
-    //const data = await adaptWords(wordsForAdaptation);
-    //const wordsToDB = data.filter((i) => i !== undefined);
-
-    //save words to DB
-    //addWordToDB(wordsToDB);
 
   } catch (err) {
     console.error(err);
   }
 }
-
 
 //get words from queue, check them in dictionary, save to DB, delete from queue. Count api queries
 async function handleWords() {
@@ -118,21 +109,20 @@ async function handleWords() {
 
   //check if word in DB
   const wordsInDB = await checkWordInDB(targetQueue.words);
-  const wordsForAdaptation = targetQueue.words.filter((i) => !wordsInDB.includes(i.word)).slice(0,50);//update amount
+  const wordsForAdaptation = targetQueue.words.filter((i) => !wordsInDB.includes(i.word)).slice(0,5);//update amount
 
   //query to dictionary if word isn't at DB
-  //const data = await adaptWords(wordsForAdaptation);
-  //const wordsToDB = data.filter((i) => i !== undefined);
+  const data = await adaptWords(wordsForAdaptation);
+  const wordsToDB = data.filter((i) => i !== undefined);
 
   //save words to DB
-  //addWordToDB(wordsToDB);
+  addWordToDB(wordsToDB);
 
   //clean the queue
   let wordsToRemove = [];
   wordsInDB.forEach((i) => wordsToRemove.push(i));
   wordsForAdaptation.forEach((i) => wordsToRemove.push(i.word));
   const updatedQueue = await updateQueueDB({ sourceId: targetQueue.sourceId, words: wordsToRemove });
-  //console.log(updated)
 
   //delete source from queue
   if (updatedQueue.dataLength < 1) {
@@ -143,5 +133,6 @@ async function handleWords() {
 
 handleWords();
 //getSeries()
+
 
 module.exports = { getSeries };

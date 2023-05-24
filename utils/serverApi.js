@@ -99,4 +99,20 @@ async function deleteQueueDB(req) {
   }
 }
 
-module.exports = { checkWordInDB, getAllWordsFromDB, addWordToDB, addQueueDB, updateQueueDB, getQueueWordsDB, deleteQueueDB };
+async function updateApiCallsDB(req) {
+  try {
+    const response = await fetch(`${SERVER_API}/apicalls`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+module.exports = {
+  checkWordInDB, getAllWordsFromDB, addWordToDB, addQueueDB, updateQueueDB, getQueueWordsDB, deleteQueueDB, updateApiCallsDB
+};

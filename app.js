@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { getSeries } = require('./utils/api');
 const wordsRoute = require('./routes/words');
 const queueRoute = require('./routes/queue');
+const apicallsRoute = require('./routes/apicalls');
 const mongoose = require('mongoose');
 
 const { PORT = 3008 } = process.env;
@@ -18,6 +19,7 @@ mongoose.connect('mongodb://localhost:27017/wordslearner', {
 
 app.use('/', wordsRoute);
 app.use('/', queueRoute);
+app.use('/', apicallsRoute);
 
 app.listen(PORT, () => {
   //getSeries();
