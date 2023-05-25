@@ -1,14 +1,14 @@
 const express = require('express');
 require('dotenv').config()
 const bodyParser = require('body-parser');
-const { getSeries } = require('./utils/api');
+const { getWordsFromSeries } = require('./utils/api');
 const wordsRoute = require('./routes/words');
 const queueRoute = require('./routes/queue');
 const apicallsRoute = require('./routes/apicalls');
 const sourceRoute = require('./routes/sources');
 const mongoose = require('mongoose');
-const { addDataDB } = require('./utils/api');
-const { sources } = require('./constants');
+const { addDataDB } = require('./utils/serverApi');
+const { sources } = require('./utils/constants');
 
 const { PORT = 3008 } = process.env;
 

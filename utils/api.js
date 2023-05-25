@@ -47,7 +47,7 @@ function getAudio(data) {
 
 }
 
-async function cleanQueue(wordsInDB, wordsForAdaptation, targetQueue) {
+async function clearQueue(wordsInDB, wordsForAdaptation, targetQueue) {
   let wordsToRemove = [];
   wordsInDB.forEach((i) => wordsToRemove.push(i));
   wordsForAdaptation.forEach((i) => wordsToRemove.push(i.word));
@@ -92,19 +92,33 @@ async function adaptWords(words) {
   return data;
 }
 
+//get series data from DB, map getWordsFromSeries
+async function mapGetWordsFromSeries() {
+  const seriesFromDB = await getDataFromDB('sources');
+  const data = await Promise.all(seriesFromDB.map(async (i) => {
+    return await getWordsFromSeries(i.id);
+  }));
+
+}
+
 //get words from series and add to queue
-async function getSeries() {
+async function getWordsFromSeries(id) {
+  debugger
   try {
-    const response = await fetch(`https://subtitles-for-youtube2.p.rapidapi.com/subtitles/lrNcx2D_FZI`, {
+    const response = await fetch(`https://subtitles-for-youtube2.p.rapidapi.com/subtitles/${id}`, {
       headers: {
         'X-RapidAPI-Key': process.env.API_KEY
       }}
     )
+    debugger
     const seriesData = await response.json();
     const filteredWords = filterWords(seriesData);
 
-    //save all words from subs to db. And then remove them after check in words api
-    addDataDB({ sourceId: 'lrNcx2D_FZI', words: filteredWords }, 'queue');
+    //save all words from subs to db (queue)
+    addDataDB({ sourceId: id, words: filteredWords }, 'queue');
+
+    //clear source in DB
+    updateDataDB({ id }, 'sources');
 
   } catch (err) {
     console.error(err);
@@ -135,13 +149,13 @@ async function handleWords() {
   addWordToDB(wordsToDB);
 
   //clean the queue
-  cleanQueue(wordsInDB, wordsForAdaptation, targetQueue);
+  clearQueue(wordsInDB, wordsForAdaptation, targetQueue);
 }
 
-
 //handleWords();
-//getSeries()
+//getWordsFromSeries()
 //updateDataDB({ sourceId: '7ukNIi1gJmc' }, 'sources');
+//mapGetWordsFromSeries()// if it's empty? and there's the same data
 
 
-module.exports = { getSeries };
+module.exports = { getWordsFromSeries };

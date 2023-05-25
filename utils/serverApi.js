@@ -16,6 +16,7 @@ async function checkWordInDB(req) {
 }
 
 async function getDataFromDB(route) {
+  debugger
   try {
     const response = await fetch(`${SERVER_API}/${route}`, {
       method: 'GET',
@@ -63,6 +64,8 @@ async function updateDataDB(req, route) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     });
+
+    console.log(response)
     debugger
     const data = await response.json();
     console.log(data)

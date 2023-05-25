@@ -2,7 +2,7 @@ const Sources = require('../models/source');
 
 async function getData(req, res) {
   try {
-    const response = await Sources.find({}).lean();
+    const response = await Sources.find({ added: false });
     res.json(response);
   } catch (err) {
     console.log(err);
@@ -30,11 +30,13 @@ async function createData(req) {
 };
 
 async function updateData(data, res) {
+  debugger
   try {
     const response = await Sources.findOneAndUpdate(
-      { id: data.body.sourceId },
+      { id: data.body.id },
       { added: true }
     );
+    debugger
     res.send(response);
   } catch (err) {
     console.log(err);

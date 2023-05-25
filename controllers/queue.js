@@ -10,7 +10,6 @@ async function getData(req, res) {
 };
 
 async function createWords(data) {
-  debugger
   try {
     const response = await Queue.create(data.body);
     if (response) return response;
