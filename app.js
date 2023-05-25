@@ -5,7 +5,10 @@ const { getSeries } = require('./utils/api');
 const wordsRoute = require('./routes/words');
 const queueRoute = require('./routes/queue');
 const apicallsRoute = require('./routes/apicalls');
+const sourceRoute = require('./routes/sources');
 const mongoose = require('mongoose');
+const { addDataDB } = require('./utils/api');
+const { sources } = require('./constants');
 
 const { PORT = 3008 } = process.env;
 
@@ -20,9 +23,12 @@ mongoose.connect('mongodb://localhost:27017/wordslearner', {
 app.use('/', wordsRoute);
 app.use('/', queueRoute);
 app.use('/', apicallsRoute);
+app.use('/', sourceRoute);
 
 app.listen(PORT, () => {
   //getSeries();
-  //console.log(test(arr));
+
+  //add sources to DB
+  //addDataDB(sources, 'sources');
   console.log(`App listening on port ${PORT}`);
 })

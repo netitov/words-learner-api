@@ -15,9 +15,9 @@ async function checkWordInDB(req) {
   }
 }
 
-async function getAllWordsFromDB() {
+async function getDataFromDB(route) {
   try {
-    const response = await fetch(`${SERVER_API}/wordsdata`, {
+    const response = await fetch(`${SERVER_API}/${route}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -42,30 +42,30 @@ async function addWordToDB(req) {
   }
 }
 
-async function addQueueDB(req) {
+async function addDataDB(req, route) {
   try {
-    const response = await fetch(`${SERVER_API}/queue`, {
+    const response = await fetch(`${SERVER_API}/${route}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     });
-    debugger
-    const data = await response;
-    console.log(data)
+    const data = await response.json();
     return data;
   } catch (err) {
     console.error(err);
   }
 }
 
-async function updateQueueDB(req) {
+async function updateDataDB(req, route) {
   try {
-    const response = await fetch(`${SERVER_API}/queue`, {
+    const response = await fetch(`${SERVER_API}/${route}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     });
+    debugger
     const data = await response.json();
+    console.log(data)
     return data;
   } catch (err) {
     console.error(err);
@@ -114,5 +114,5 @@ async function updateApiCallsDB(req) {
 }
 
 module.exports = {
-  checkWordInDB, getAllWordsFromDB, addWordToDB, addQueueDB, updateQueueDB, getQueueWordsDB, deleteQueueDB, updateApiCallsDB
+  checkWordInDB, getDataFromDB, addWordToDB, addDataDB, updateDataDB, getQueueWordsDB, deleteQueueDB, updateApiCallsDB
 };

@@ -1,6 +1,8 @@
 const fetch = require('node-fetch');
-const { checkWordInDB, getAllWordsFromDB, addWordToDB, addQueueDB, getQueueWordsDB, updateQueueDB,
+const { checkWordInDB, getDataFromDB, addWordToDB, addDataDB, getQueueWordsDB, updateDataDB,
   deleteQueueDB, updateApiCallsDB } = require('./serverApi');
+const { REQ_LIMIT } = require('./config');
+
 
 function filterWords(arr) {
   const newArr = [];
@@ -35,7 +37,6 @@ function getWord(data) {
 }
 
 function getAudio(data) {
-
   if (data.hwi.prs === undefined) return '';
   else {
     const file = data.hwi.prs.find((i) => i.sound).sound.audio;
@@ -46,13 +47,23 @@ function getAudio(data) {
 
 }
 
+async function cleanQueue(wordsInDB, wordsForAdaptation, targetQueue) {
+  let wordsToRemove = [];
+  wordsInDB.forEach((i) => wordsToRemove.push(i));
+  wordsForAdaptation.forEach((i) => wordsToRemove.push(i.word));
+  const updatedQueue = await updateDataDB({ sourceId: targetQueue.sourceId, words: wordsToRemove }, 'queue');
+
+  if (updatedQueue.dataLength < 1) {
+    deleteQueueDB({ sourceId: targetQueue.sourceId });
+  }
+}
+
 //get word data from dictionary api
 async function getWordData(obj) {
   try {
     const response = await fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${obj.word}?key=${process.env.WORDS_API_KEY}`)
     const data = await response.json();
     const element = data[0];
-
 
     if (element.meta === undefined) return
     else {
@@ -93,23 +104,28 @@ async function getSeries() {
     const filteredWords = filterWords(seriesData);
 
     //save all words from subs to db. And then remove them after check in words api
-    addQueueDB({ sourceId: 'lrNcx2D_FZI', words: filteredWords });
+    addDataDB({ sourceId: 'lrNcx2D_FZI', words: filteredWords }, 'queue');
 
   } catch (err) {
     console.error(err);
   }
 }
 
-//get words from queue, check them in dictionary, save to DB, delete from queue. Count api queries
+//get words from queue, check them in dictionary, save to DB, delete from queue, count api queries
 async function handleWords() {
 
   //get words from queue
   const allQueue = await getQueueWordsDB();
   const targetQueue = allQueue[0];
 
-  //check if word in DB
+  //check if word in DB to exclude from req
   const wordsInDB = await checkWordInDB(targetQueue.words);
-  const wordsForAdaptation = targetQueue.words.filter((i) => !wordsInDB.includes(i.word)).slice(0,5);//update amount
+
+  //get api calls amount to limit request
+  const apiCalls = await getDataFromDB('apicalls');
+  const today = new Date().toISOString().slice(0, 10);
+  const apiCallsAmount = apiCalls.find((i) => i.date === today).words;
+  const wordsForAdaptation = targetQueue.words.filter((i) => !wordsInDB.includes(i.word)).slice(0, REQ_LIMIT - apiCallsAmount);
 
   //query to dictionary if word isn't at DB
   const data = await adaptWords(wordsForAdaptation);
@@ -119,20 +135,13 @@ async function handleWords() {
   addWordToDB(wordsToDB);
 
   //clean the queue
-  let wordsToRemove = [];
-  wordsInDB.forEach((i) => wordsToRemove.push(i));
-  wordsForAdaptation.forEach((i) => wordsToRemove.push(i.word));
-  const updatedQueue = await updateQueueDB({ sourceId: targetQueue.sourceId, words: wordsToRemove });
-
-  //delete source from queue
-  if (updatedQueue.dataLength < 1) {
-    deleteQueueDB({ sourceId: targetQueue.sourceId });
-  }
-
+  cleanQueue(wordsInDB, wordsForAdaptation, targetQueue);
 }
 
-handleWords();
+
+//handleWords();
 //getSeries()
+//updateDataDB({ sourceId: '7ukNIi1gJmc' }, 'sources');
 
 
 module.exports = { getSeries };
