@@ -64,11 +64,7 @@ async function updateDataDB(req, route) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     });
-
-    console.log(response)
-    debugger
     const data = await response.json();
-    console.log(data)
     return data;
   } catch (err) {
     console.error(err);
@@ -116,6 +112,21 @@ async function updateApiCallsDB(req) {
   }
 }
 
+async function updateLanguagesDB(req) {
+  try {
+    const response = await fetch(`${SERVER_API}/languages`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
 module.exports = {
-  checkWordInDB, getDataFromDB, addWordToDB, addDataDB, updateDataDB, getQueueWordsDB, deleteQueueDB, updateApiCallsDB
+  checkWordInDB, getDataFromDB, addWordToDB, addDataDB, updateDataDB, getQueueWordsDB, deleteQueueDB, updateApiCallsDB, updateLanguagesDB
 };

@@ -2,7 +2,7 @@ const Word = require('../models/word');
 
 async function getData(req, res) {
   try {
-    const response = await Word.find({}).lean();
+    const response = await Word.find({});
     return res.json(response);
   } catch (err) {
     console.log(err);

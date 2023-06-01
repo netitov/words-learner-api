@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { checkWordInDB, getDataFromDB, addWordToDB, addDataDB, getQueueWordsDB, updateDataDB,
-  deleteQueueDB, updateApiCallsDB } = require('./serverApi');
+  deleteQueueDB, updateApiCallsDB, updateLanguagesDB } = require('./serverApi');
 const { REQ_LIMIT } = require('./config');
 
 
@@ -80,7 +80,7 @@ async function getWordData(obj) {
   }
 }
 
-async function adaptWords(words) {
+async function mapGetWordData(words) {
   //log api calls
   const today = new Date().toISOString().slice(0, 10);
   updateApiCallsDB({ date: today, words: words.length });
@@ -138,11 +138,11 @@ async function handleWords() {
   //get api calls amount to limit request
   const apiCalls = await getDataFromDB('apicalls');
   const today = new Date().toISOString().slice(0, 10);
-  const apiCallsAmount = apiCalls.find((i) => i.date === today).words;
+  const apiCallsAmount = (apiCalls.find((i) => i.date === today) === undefined) ? 0 : (apiCalls.find((i) => i.date === today));
   const wordsForAdaptation = targetQueue.words.filter((i) => !wordsInDB.includes(i.word)).slice(0, REQ_LIMIT - apiCallsAmount);
 
   //query to dictionary if word isn't at DB
-  const data = await adaptWords(wordsForAdaptation);
+  const data = await mapGetWordData(wordsForAdaptation);
   const wordsToDB = data.filter((i) => i !== undefined);
 
   //save words to DB
@@ -152,10 +152,25 @@ async function handleWords() {
   clearQueue(wordsInDB, wordsForAdaptation, targetQueue);
 }
 
+
+async function getLanguages() {
+  try {
+    const response = await fetch(`https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${process.env.YTRANSL_KEY}&ui=en`, {
+      method: 'POST' }
+    )
+    const data = await response.json();
+    updateLanguagesDB(data);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+//getLanguages()
 //handleWords();
+
 //getWordsFromSeries()
 //updateDataDB({ sourceId: '7ukNIi1gJmc' }, 'sources');
 //mapGetWordsFromSeries()// if it's empty? and there's the same data
 
 
-module.exports = { getWordsFromSeries };
+module.exports = { mapGetWordsFromSeries, handleWords };

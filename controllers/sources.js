@@ -30,14 +30,11 @@ async function createData(req) {
 };
 
 async function updateData(data, res) {
-  debugger
   try {
     const response = await Sources.findOneAndUpdate(
       { id: data.body.id },
       { added: true }
     );
-    debugger
-    res.send(response);
   } catch (err) {
     console.log(err);
   }
