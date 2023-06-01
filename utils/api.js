@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { checkWordInDB, getDataFromDB, addWordToDB, addDataDB, getQueueWordsDB, updateDataDB,
-  deleteQueueDB, updateApiCallsDB, updateLanguagesDB } = require('./serverApi');
+  deleteQueueDB, updateApiCallsDB, updateLanguagesDB, updateDictionaryDB } = require('./serverApi');
 const { REQ_LIMIT } = require('./config');
 
 
@@ -152,7 +152,8 @@ async function handleWords() {
   clearQueue(wordsInDB, wordsForAdaptation, targetQueue);
 }
 
-
+//every month?
+//get list of languages for translation from YT and update in DB
 async function getLanguages() {
   try {
     const response = await fetch(`https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${process.env.YTRANSL_KEY}&ui=en`, {
@@ -165,7 +166,22 @@ async function getLanguages() {
   }
 }
 
-//getLanguages()
+//every month?
+//get dictionary for translation from YD and update in DB
+async function getDictionary() {
+  try {
+    const response = await fetch(`https://dictionary.yandex.net/api/v1/dicservice.json/getLangs?key=${process.env.YDICTION_KEY}`, {
+      method: 'GET' }
+    )
+    const data = await response.json();
+    updateDictionaryDB(data);
+    console.log('done')
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+//getDictionary()
 //handleWords();
 
 //getWordsFromSeries()

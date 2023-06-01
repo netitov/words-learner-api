@@ -8,6 +8,7 @@ const queueRoute = require('./routes/queue');
 const apicallsRoute = require('./routes/apicalls');
 const sourceRoute = require('./routes/sources');
 const languageRouter =  require('./routes/languages');
+const dictionaryRouter =  require('./routes/dictionary');
 const mongoose = require('mongoose');
 const { addDataDB } = require('./utils/serverApi');
 const { sources } = require('./utils/constants');
@@ -29,6 +30,7 @@ app.use('/', queueRoute);
 app.use('/', apicallsRoute);
 app.use('/', sourceRoute);
 app.use('/', languageRouter);
+app.use('/', dictionaryRouter);
 
 app.listen(PORT, () => {
   //getSeries();
