@@ -141,6 +141,20 @@ async function updateDictionaryDB(req) {
   }
 }
 
+async function addFrequencyDB(obj) {
+  try {
+    const response = await fetch(`${SERVER_API}/freq`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(obj),
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 
 module.exports = {
   checkWordInDB,
@@ -152,5 +166,6 @@ module.exports = {
   deleteQueueDB,
   updateApiCallsDB,
   updateLanguagesDB,
-  updateDictionaryDB
+  updateDictionaryDB,
+  addFrequencyDB
 };

@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { checkWordInDB, getDataFromDB, addWordToDB, addDataDB, getQueueWordsDB, updateDataDB,
-  deleteQueueDB, updateApiCallsDB, updateLanguagesDB, updateDictionaryDB } = require('./serverApi');
+  deleteQueueDB, updateApiCallsDB, updateLanguagesDB, updateDictionaryDB, addFrequencyDB } = require('./serverApi');
 const { REQ_LIMIT } = require('./config');
 
 
@@ -181,6 +181,25 @@ async function getDictionary() {
   }
 }
 
+async function getFrequency(word) {
+  try {
+    const response = await fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}/frequency`,
+    {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': process.env.API_KEY,
+        'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
+      }
+    }
+    );
+    const result = await response.json();
+    const data = await addFrequencyDB(result);
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 //getDictionary()
 //handleWords();
 
@@ -189,4 +208,4 @@ async function getDictionary() {
 //mapGetWordsFromSeries()// if it's empty? and there's the same data
 
 
-module.exports = { mapGetWordsFromSeries, handleWords };
+module.exports = { mapGetWordsFromSeries, handleWords, getFrequency };
