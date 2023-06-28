@@ -193,8 +193,12 @@ async function getFrequency(word) {
     }
     );
     const result = await response.json();
-    const data = await addFrequencyDB(result);
-    return data;
+    if (result.success === false) {
+      return { word, fr: 1 }
+    } else {
+      const data = await addFrequencyDB(result);
+      return data;
+    }
   } catch (err) {
     console.error(err);
   }
