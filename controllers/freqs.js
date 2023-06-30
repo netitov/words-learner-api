@@ -3,6 +3,7 @@ const { getFrequency } = require('../utils/api');
 
 async function getData(req, res) {
   const words = req.params.words.split(',');
+
   try {
     //check if word in DB
     const response = await Freq.find({ word: { $in: words } });
