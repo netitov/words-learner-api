@@ -155,6 +155,20 @@ async function addFrequencyDB(obj) {
   }
 }
 
+//find word (and translate) in dictionary api, if text is shorter 3 words. Otherwise, use translation api
+async function translate({ langs, text, inDictionary }) {
+  try {
+    const response = await fetch(`${SERVER_API}/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ langs, text, inDictionary })
+    });
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 module.exports = {
   checkWordInDB,
@@ -167,5 +181,6 @@ module.exports = {
   updateApiCallsDB,
   updateLanguagesDB,
   updateDictionaryDB,
-  addFrequencyDB
+  addFrequencyDB,
+  translate
 };

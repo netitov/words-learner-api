@@ -204,6 +204,57 @@ async function getFrequency(word) {
   }
 }
 
+//get text translation from yandex api
+async function getTranslation({ langs, text }) {
+  try {
+    const response = await fetch(`https://translate.yandex.net/api/v1.5/tr.json/translate?key=${process.env.YTRANSL_KEY}&text=${text}&lang=${langs}`,
+    { method: 'POST' }
+    );
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+//get text word translation from yandex dictionary api
+//in dictionary api can get one word translation and word data in dictionary
+async function checkDictionary({ langs, text }) {
+  try {
+    const response = await fetch(`https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=${process.env.YDICTION_KEY}&lang=${langs}&text=${text}`,
+    { method: 'GET' }
+    );
+    const result = await response.json();
+    return result.def;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+//find word (and translate) in dictionary api, if text is shorter 3 words. Otherwise, use translation api
+async function translate(req, res) {
+  const { langs, text, inDictionary } = req.body;
+  try {
+    if (text.split(' ').length < 3 && inDictionary) {
+      const dictionary = await checkDictionary({ langs, text });
+      if (dictionary.length > 0) {
+        res.json(dictionary);
+      } else {
+        const result = await getTranslation({ langs, text });
+        res.json(result);
+      }
+
+    } else {
+      const result = await getTranslation({ langs, text });
+      res.json(result);
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+}
+
+
+
 //getDictionary()
 //handleWords();
 
@@ -212,4 +263,4 @@ async function getFrequency(word) {
 //mapGetWordsFromSeries()// if it's empty? and there's the same data
 
 
-module.exports = { mapGetWordsFromSeries, handleWords, getFrequency };
+module.exports = { mapGetWordsFromSeries, handleWords, getFrequency, translate, checkDictionary };

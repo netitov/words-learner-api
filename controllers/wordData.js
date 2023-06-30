@@ -1,33 +1,61 @@
 const Words = require('../models/wordData');
 const csv = require('csvtojson');
+const { checkDictionary } = require('../utils/api');
 
 async function getData(req, res) {
   const words = req.params.words.split(',');
-
   try {
-    //check if word in DB
     const response = await Words.find({ word: { $in: words } });
-
-    /* const foundWords = response.map(i => ({ word: i.word, fr: i.fr }));
-    const notFoundWords = words.filter(i => !foundWords.some(w => i === w.word));
-
-    const wordsToAdd = [];
-
-    //get frequency for words which are not in DB
-    for (const word of notFoundWords) {
-      const apiResponse = await getFrequency(word);
-      const addedObj = { word: apiResponse.word, fr: apiResponse.fr };
-      wordsToAdd.push(addedObj);
-    }
-
-    const allWords = foundWords.concat(wordsToAdd); */
-
     res.json(response);
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
+async function getFilteredData(req, res) {
+  try {
+    const filters = {};
+
+    //use filters only of they're in the request
+    if (req.query.frSt) {
+      filters.fr = {
+        $gte: parseInt(req.query.frSt),
+        $lt: parseInt(req.query.frEn),
+      };
+    }
+    if (req.query.pos) {
+      filters.pos = req.query.pos;
+    }
+
+    console.log(filters)
+
+    //get random docs
+    const result = await Words.aggregate([
+      { $match: filters },
+      { $sample: { size: 200 } } //amount of random documents
+    ]);
+
+    //add translation
+    const translatedWords = [];
+
+    for (const obj of result) {
+      const apiResponse = await checkDictionary({ langs: 'en-ru', text: obj.word });
+      const translation = apiResponse.length !== 0 ? apiResponse[0].tr[0].text : '';
+
+      if (translation !== '') {
+        translatedWords.push({ ...obj, translation });
+      }
+
+      if (translatedWords.length === 5) {
+        break;
+      }
+    }
+
+    res.json(translatedWords);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
 
 async function createData(req, res) {
   try {
@@ -58,4 +86,4 @@ async function createData(req, res) {
   }
 };
 
-module.exports = { getData, createData };
+module.exports = { getData, createData, getFilteredData };
