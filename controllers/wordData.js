@@ -1,6 +1,7 @@
 const Words = require('../models/wordData');
 const csv = require('csvtojson');
 const { checkDictionary } = require('../utils/api');
+const nlp = require('compromise');
 
 async function getData(req, res) {
   const words = req.params.words.split(',');
@@ -13,21 +14,28 @@ async function getData(req, res) {
 };
 
 async function getFilteredData(req, res) {
+  console.log(req.query)
   try {
-    const filters = {};
+    const filters = {
+      isValid: true
+    };
 
     //use filters only of they're in the request
     if (req.query.frSt) {
       filters.fr = {
         $gte: parseInt(req.query.frSt),
-        $lt: parseInt(req.query.frEn),
+        $lte: parseInt(req.query.frEn),
       };
     }
-    if (req.query.pos) {
-      filters.pos = req.query.pos;
+    if (req.query.filmPerSt) {
+      filters.filmPer = {
+        $gte: parseInt(req.query.filmPerSt),
+        $lte: parseInt(req.query.filmPerEn),
+      };
     }
-
-    console.log(filters)
+    if (req.query.pos) {//add if empty - then only Noun, verb adj
+      filters.pos = { $in: req.query.pos.split(',') };
+    }
 
     //get random docs
     const result = await Words.aggregate([
@@ -39,20 +47,21 @@ async function getFilteredData(req, res) {
     const translatedWords = [];
 
     for (const obj of result) {
-      const apiResponse = await checkDictionary({ langs: 'en-ru', text: obj.word });
+      const apiResponse = await checkDictionary({ langs: 'en-' + req.query.lang, text: obj.word });
       const translation = apiResponse.length !== 0 ? apiResponse[0].tr[0].text : '';
 
       if (translation !== '') {
         translatedWords.push({ ...obj, translation });
       }
 
-      if (translatedWords.length === 5) {
+      if (translatedWords.length === 10) {
         break;
       }
     }
 
     res.json(translatedWords);
   } catch (error) {
+    console.log(error)
     res.status(500).json(error.message);
   }
 };
@@ -86,4 +95,58 @@ async function createData(req, res) {
   }
 };
 
-module.exports = { getData, createData, getFilteredData };
+function checkValidity(word, pos) {
+  const parsedWord = nlp(word);
+
+  const verbInf = parsedWord.verbs().toInfinitive().text();
+  const nounSing = parsedWord.nouns().isSingular().text();
+
+  if (process.env.OFFENSIVE_ARR.includes(word)) {
+    return false;
+  }
+  if (pos === 'Verb' && verbInf === word) {
+    return true;
+  }
+  if (pos === 'Noun' && nounSing === parsedWord) {
+    return true;
+  }
+  if (pos === 'Noun' && !/(s)$/.test(word)) {
+    return true;
+  }
+  if (pos === 'Adjective') {
+    return true;
+  }
+
+  return false;
+}
+
+async function addValidity(req, res) {
+  try {
+    const pageSize = 1000;
+    let page = 0;
+
+    while (true) {
+      const words = await Words.find().skip(page * pageSize).limit(pageSize);
+
+      if (words.length === 0) {
+        break;
+      }
+
+      for (const word of words) {
+
+        word.isValid = checkValidity(word.word, word.pos);
+        await word.save();
+      }
+
+      page++;
+    }
+    res.json({ success: 'Data added' });
+
+  } catch (err) {
+    console.log(err)
+    res.status(500).json(err.message);
+  }
+
+}
+
+module.exports = { getData, createData, getFilteredData, addValidity };

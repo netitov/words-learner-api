@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/netitov/words-learner-api#readme",
   "dependencies": {
+    "compromise": "^14.9.0",
     "cors": "^2.8.5",
     "csvtojson": "^2.0.10",
     "dotenv": "^16.0.3",

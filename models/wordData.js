@@ -17,6 +17,9 @@ const wordDataSchema = new mongoose.Schema({
   fr: {
     type: Number,
     required: true
+  },
+  isValid: {
+    type: Boolean
   }
 });
 
