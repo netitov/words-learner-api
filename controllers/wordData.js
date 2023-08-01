@@ -48,10 +48,11 @@ async function getFilteredData(req, res) {
 
     for (const obj of result) {
       const apiResponse = await checkDictionary({ langs: 'en-' + req.query.lang, text: obj.word });
-      const translation = apiResponse.length !== 0 ? apiResponse[0].tr[0].text : '';
+      const translation = apiResponse.length > 0 ? apiResponse[0].tr[0].text : '';
+      const otherTransl =  apiResponse.length > 0 ? apiResponse : '';
 
       if (translation !== '') {
-        translatedWords.push({ ...obj, translation });
+        translatedWords.push({ ...obj, translation, otherTransl });
       }
 
       if (translatedWords.length === 10) {
