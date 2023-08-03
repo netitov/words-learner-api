@@ -3,7 +3,7 @@ const { celebrate, Segments, Joi } = require('celebrate');
 const register = celebrate({
   [Segments.BODY]: Joi.object().keys({
     email: Joi.string().required().email().messages({
-      'string.email': 'Invalid email format',
+      'string.email': 'Invalid email',
       'string.empty': 'Email is required',
     }),
     userName: Joi.string().min(2).max(30).messages({

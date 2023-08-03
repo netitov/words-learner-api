@@ -16,6 +16,7 @@ const createToken = (userId) => {
 const getUserMe = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    console.log(req.user)
     const user = await User.findById(userId);
     if (!user) {
       throw new NotFound('There is no user with this id');
@@ -86,6 +87,7 @@ const updateUser = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password)
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       throw new Unauthorized('Incorrect email or password');
@@ -93,17 +95,16 @@ const login = async (req, res, next) => {
 
     const isValid = await bcrypt.compare(password, user.password);
     if (isValid) {
-      /* const token = jwt.sign({ _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'development',
-        { expiresIn: '7d' }); */
-        //createToken(user._id)
         const token = createToken(user._id);
-      res.send({ token });
+      res.send({ token, email: user.email, userName: user.userName });
     } else {
       throw new Unauthorized('Incorrect email or password');
     }
   } catch (err) {
     next(err);
+    console.log(err)
+    //res.send(err);
+
   }
 };
 

@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { errors, isCelebrateError } = require('celebrate');
+const errorHandler = require('../middlewares/errorHandler');
 
 const { login, createUser } = require('../controllers/users');
 const registerValidator = require('../middlewares/validators/register');

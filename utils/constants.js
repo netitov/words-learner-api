@@ -22,6 +22,8 @@ const sources = [
 
 ];
 
+const errors = ['Invalid email', 'Email is required', 'Password is required'];
+
 module.exports = {
-  sources
+  sources, errors
 }

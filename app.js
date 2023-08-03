@@ -13,6 +13,8 @@ const wordDataRouter =  require('./routes/wordData');
 const translateRouter =  require('./routes/translate'); */
 const route = require('./routes/index');
 const mongoose = require('mongoose');
+const errorHandler = require('./middlewares/errorHandler');
+const { isCelebrateError } = require('celebrate');
 
 const { PORT = 3008 } = process.env;
 
@@ -27,14 +29,22 @@ mongoose.connect('mongodb://localhost:27017/wordslearner', {
 app.use(cors());
 
 app.use('/', route);
-/* app.use('/', queueRoute);
-app.use('/', apicallsRoute);
-app.use('/', sourceRoute);
-app.use('/', languageRouter);
-app.use('/', dictionaryRouter);
-app.use('/', freqRouter);
-app.use('/', wordDataRouter);
-app.use('/', translateRouter); */
+
+//celebrate errors
+//app.use(errors());
+
+app.use((err, req, res, next) => {
+  if (isCelebrateError(err)) {
+    next(err);
+  } else {
+    next(err);
+  }
+
+});
+
+app.use(errorHandler);
+
+//error logger
 
 
 app.listen(PORT, () => {
