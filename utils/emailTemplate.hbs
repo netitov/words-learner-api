@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Reset</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .header {
+      text-align: center;
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .content {
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Password Reset</h2>
+    </div>
+    <div class="content">
+      <p>Hello,</p>
+      <p>You are receiving this email because you requested a password reset for your account.</p>
+      <p>If you didn't request a password reset, please ignore this email.</p>
+      <p>If you wish to reset your password, please click the button below:</p>
+      <p class="btn__par"><a class="btn" href="{{ link }}" style="color: #fff">Reset Password</a></p>
+      <p>The link is valid for 1 hour.</p>
+    </div>
+    <div class="footer">
+      <p>Best regards,<br>Your Word Learner App</p>
+    </div>
+  </div>
+</body>
+
+</html>

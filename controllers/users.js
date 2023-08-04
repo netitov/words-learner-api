@@ -1,6 +1,16 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/user');
+const Token = require('../models/token');
+const { SERVER_API } = require('../utils/config');
+const { sendEmail } = require('../utils/sendEmail');
+const { resetPassText } = require('../utils/constants');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
+
+
 const {
   NotFound, Conflict, Unauthorized, BadRequest,
 } = require('../errors');
@@ -52,7 +62,7 @@ const createUser = async (req, res, next) => {
 
     const token = createToken(newUser._id);
 
-    res.send({ token });
+    res.send({ token, userName, email });
   } catch (err) {
     if (err.name === 'ValidationError') {
       throw new BadRequest('Incorrect data entered');
@@ -87,7 +97,6 @@ const updateUser = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password)
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       throw new Unauthorized('Incorrect email or password');
@@ -102,12 +111,48 @@ const login = async (req, res, next) => {
     }
   } catch (err) {
     next(err);
-    console.log(err)
-    //res.send(err);
-
+    console.log(err);
   }
 };
 
+const sendResetLink = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      throw new Unauthorized("user with given email doesn't exist");
+    }
+
+    let token = await Token.findOne({ userId: user._id });
+    if (!token) {
+      token = await new Token({
+        userId: user._id,
+        token: crypto.randomBytes(32).toString('hex'),
+      }).save();
+    }
+
+    // path to email template
+    const rootDir = path.resolve(__dirname, '..');
+    const templatePath = path.join(rootDir, 'utils', 'emailTemplate.hbs');
+
+    //get html template for email
+    const emailTemplateSource = fs.readFileSync(templatePath, 'utf8');
+    const emailTemplate = handlebars.compile(emailTemplateSource);
+
+    const link = `${SERVER_API}/password-reset/${user._id}/${token.token}`;
+    const text = resetPassText(link);
+    const htmlToSend = emailTemplate({ link: link });
+    await sendEmail(user.email, 'Password reset', text, htmlToSend);
+
+    res.json('password reset link sent to your email account');
+
+  } catch (err) {
+    next(err);
+    console.log(err);
+  }
+
+}
+
+
 module.exports = {
-  createUser, updateUser, login, getUserMe,
+  createUser, updateUser, login, getUserMe, sendResetLink
 };

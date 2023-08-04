@@ -1,24 +1,23 @@
 const mongoose = require('mongoose');
+const { userNameLengthMin, userNameLengthMax, passwordLengthMin } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    minlength: 2,
-    maxlength: 30,
     required: true,
     unique: true,
     index: true
   },
   password: {
     type: String,
-    minlength: 7,
+    minlength: passwordLengthMin,
     required: true,
     select: false,
   },
   userName: {
     type: String,
-    minlength: 2,
-    maxlength: 30,
+    minlength: userNameLengthMin,
+    maxlength: userNameLengthMax,
     required: true,
     unique: true,
     index: true

@@ -2,15 +2,6 @@ const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
 const bodyParser = require('body-parser');
-/* const wordsRoute = require('./routes/words');
-const queueRoute = require('./routes/queue');
-const apicallsRoute = require('./routes/apicalls');
-const sourceRoute = require('./routes/sources');
-const languageRouter =  require('./routes/languages');
-const dictionaryRouter =  require('./routes/dictionary');
-const freqRouter =  require('./routes/freqs');
-const wordDataRouter =  require('./routes/wordData');
-const translateRouter =  require('./routes/translate'); */
 const route = require('./routes/index');
 const mongoose = require('mongoose');
 const errorHandler = require('./middlewares/errorHandler');
@@ -45,7 +36,6 @@ app.use((err, req, res, next) => {
 app.use(errorHandler);
 
 //error logger
-
 
 app.listen(PORT, () => {
   //getSeries();
