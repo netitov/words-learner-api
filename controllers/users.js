@@ -9,6 +9,7 @@ const { resetPassText } = require('../utils/constants');
 const handlebars = require('handlebars');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
 
 const {
@@ -152,7 +153,39 @@ const sendResetLink = async (req, res, next) => {
 
 }
 
+const updatePassword = async (req, res, next) => {
+  const { userId, token } = req.params;
+  try {
+    //check id validity
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Unauthorized('Invalid user ID');
+    }
+    //check if user with this id exists
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Unauthorized('invalid link or expired');
+    }
+    //check token validity
+    const userToken = await Token.findOne({ userId, token });
+    if (!userToken) {
+      throw new Unauthorized('invalid link or expired');
+    }
+
+    //save new password and remove token for reset link
+    const hash = await bcrypt.hash(req.body.password, 10);
+    user.password = hash;
+    await user.save();
+    await userToken.deleteOne();
+
+    res.json('password updated sucessfully');
+
+  } catch (err) {
+    next(err);
+    console.log(err);
+  }
+}
+
 
 module.exports = {
-  createUser, updateUser, login, getUserMe, sendResetLink
+  createUser, updateUser, login, getUserMe, sendResetLink, updatePassword
 };
