@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user');
 const Token = require('../models/token');
-const { SERVER_API } = require('../utils/config');
+const { FRONT_LINK } = require('../utils/config');
 const { sendEmail } = require('../utils/sendEmail');
 const { resetPassText } = require('../utils/constants');
 const handlebars = require('handlebars');
@@ -139,7 +139,7 @@ const sendResetLink = async (req, res, next) => {
     const emailTemplateSource = fs.readFileSync(templatePath, 'utf8');
     const emailTemplate = handlebars.compile(emailTemplateSource);
 
-    const link = `${SERVER_API}/password-reset/${user._id}/${token.token}`;
+    const link = `${FRONT_LINK}/password-reset/${user._id}/${token.token}`;
     const text = resetPassText(link);
     const htmlToSend = emailTemplate({ link: link });
     await sendEmail(user.email, 'Password reset', text, htmlToSend);
