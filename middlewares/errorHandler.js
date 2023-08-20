@@ -2,7 +2,6 @@ const { CelebrateError } = require('celebrate');
 const { errors } = require('../utils/constants');
 
 const errorHandler = (err, req, res, next) => {
-  console.log(err)
   if (err.status) {
     return res.status(err.status).send({ serverError: err.message });
   }

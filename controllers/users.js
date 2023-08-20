@@ -27,7 +27,6 @@ const createToken = (userId) => {
 const getUserMe = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    console.log(req.user)
     const user = await User.findById(userId);
     if (!user) {
       throw new NotFound('There is no user with this id');

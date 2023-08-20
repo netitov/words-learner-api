@@ -52,7 +52,7 @@ async function getFilteredData(req, res) {
       const otherTransl =  apiResponse.length > 0 ? apiResponse : '';
 
       if (translation !== '') {
-        translatedWords.push({ ...obj, translation, otherTransl });
+        translatedWords.push({ ...obj, translation, otherTransl, lang: req.query.lang });
       }
 
       if (translatedWords.length === 10) {

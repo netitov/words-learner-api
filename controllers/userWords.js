@@ -8,8 +8,9 @@ async function getData(req, res, next) {
     const response = await UserWord.find({ userId });
     if (!response) {
       throw new NotFound('There is no user with this id');
+    } else {
+      res.json(response);
     }
-    res.json(response);
   } catch (err) {
     next(err);
   }
@@ -30,6 +31,24 @@ async function createData(req, res, next) {
   }
 }
 
+async function deleteData(req, res, next) {
+  const { word } = req.params;
+  const userId = req.user._id;
+  try {
+    const deletedWord = await UserWord.findOneAndDelete({ word, userId });
+
+    if (!deletedWord) {
+      throw new NotFound('Word not found');
+    } else {
+      res.json({ message: 'Word deleted successfully' });
+    }
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+
 module.exports = {
-  getData, createData
+  getData, createData, deleteData
 };

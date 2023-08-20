@@ -13,6 +13,7 @@ const wordsDataRoute = require('./wordData');
 const wordsRoute = require('./words');
 const usersRoute = require('./users');
 const userWordsRoute = require('./userWords');
+const collectionsRouter = require('./collections');
 const { NotFound } = require('../errors')
 const authMiddleware = require('../middlewares/auth');
 
@@ -28,6 +29,7 @@ router.use('/', wordsDataRoute);
 router.use('/words', wordsRoute);
 router.use('/users', usersRoute);
 router.use('/userwords', userWordsRoute);
+router.use('/collections', collectionsRouter);
 
 router.use('*', authMiddleware, () => {
   throw new NotFound('Page not found');
