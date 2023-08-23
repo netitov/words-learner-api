@@ -4,7 +4,7 @@ const wordSchema = Joi.object({
   word: Joi.string().required(),
   translation: Joi.string().required(),
   translationLang: Joi.string().required(),
-  source: Joi.array().items(Joi.string())
+  source: Joi.array()
 });
 
 const arrayOfWordsSchema = Joi.array().items(wordSchema);

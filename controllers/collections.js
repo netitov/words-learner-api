@@ -1,5 +1,5 @@
 const Collection = require('../models/collection');
-
+const UserWord = require('../models/userWord');
 const { NotFound } = require('../errors');
 
 async function getData(req, res, next) {

@@ -19,12 +19,16 @@ async function getData(req, res, next) {
 async function createData(req, res, next) {
   const words = req.body;
   const userId = req.user._id;
+  const addedWords = [];
+
   try {
     for (let i = 0; i < words.length; i++) {
       const wordObj = words[i];
-      await UserWord.create({ ...wordObj, userId });
+      const addedWord = await UserWord.create({ ...wordObj, userId });
+      addedWords.push(addedWord);
     }
-    res.json('Added to learning list');
+
+    res.json(addedWords);
   } catch (err) {
     console.log(err);
     next(err);
@@ -48,7 +52,50 @@ async function deleteData(req, res, next) {
   }
 };
 
+//remove deleted collection from user words
+async function updateWordSource(req, res, next) {
+  try {
+    const { collectionId } = req.body;
+    const userId = req.user._id;
+
+    //update words collection
+    await UserWord.updateMany(
+      { 'source.collectionId': collectionId, userId: userId },
+      { $pull: { source: { collectionId } } }
+    );
+
+    //get and return all user words
+    const allWords = await UserWord.find({ userId });
+    res.json(allWords);
+
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+}
+
+
+//remove words array from user learning list
+async function deleteArrayData(req, res, next) {
+  try {
+    const { collectionId } = req.body;
+    const userId = req.user._id;
+
+    // Delete words
+    await UserWord.deleteMany({ 'source.collectionId': collectionId, userId });
+
+    //get and return all user words
+    const allWords = await UserWord.find({ userId });
+    res.json(allWords);
+
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+}
+
+
 
 module.exports = {
-  getData, createData, deleteData
+  getData, createData, deleteData, updateWordSource, deleteArrayData
 };
