@@ -6,6 +6,8 @@ router.post('/word-data', uploadFile, wordData.createData);
 router.patch('/word-data', wordData.addValidity);
 router.get('/word-data/:words', wordData.getData);
 router.get('/random-words', wordData.getFilteredData);
+
+router.post('/word-data-quiz', wordData.getQuizOptions);
 //router.patch('/worddata', wordData.updateData);
 
 module.exports = router;

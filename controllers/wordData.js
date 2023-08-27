@@ -1,6 +1,6 @@
 const Words = require('../models/wordData');
 const csv = require('csvtojson');
-const { checkDictionary } = require('../utils/api');
+const { checkDictionary, getSynonyms } = require('../utils/api');
 const nlp = require('compromise');
 
 async function getData(req, res) {
@@ -13,8 +13,8 @@ async function getData(req, res) {
   }
 };
 
+//get random words
 async function getFilteredData(req, res) {
-  console.log(req.query)
   try {
     const filters = {
       isValid: true
@@ -36,6 +36,8 @@ async function getFilteredData(req, res) {
     if (req.query.pos) {//add if empty - then only Noun, verb adj
       filters.pos = { $in: req.query.pos.split(',') };
     }
+
+    console.log(filters)
 
     //get random docs
     const result = await Words.aggregate([
@@ -66,6 +68,72 @@ async function getFilteredData(req, res) {
     res.status(500).json(error.message);
   }
 };
+
+function getRandomElement(array) {
+  const randomIndex = Math.floor(Math.random() * array?.length);
+  return array[randomIndex];
+}
+
+//get words for quiz
+async function getQuizOptions(req, res) {
+  try {
+    const userWords = req.body;
+    const excludedWordsArray = userWords.map(i => i.word);
+    const wordsForQuiz = [];
+
+    // Get random words from DB for quiz options (answers)
+    const randomWords = await Words.aggregate([
+      { $match: {
+        isValid: true,
+        fr: { $gte: 3, $lte: 5 },
+        word: { $nin: excludedWordsArray } //exclude initial words
+      } },
+      { $sample: { size: 25 } }
+    ]);
+
+    const synonymsPromises = randomWords.map(obj => getSynonyms(obj.word));
+    const allSynonyms = await Promise.all(synonymsPromises);
+
+    //add quiz options
+    userWords.forEach(w => {
+      const options = [];
+
+      //perform loop until word doesnt have 3 options
+      while (options.length < 3) {
+        //add word-options if its not included
+        const randomWord = getRandomElement(allSynonyms);
+        if (!options.includes(randomWord.word)) {
+          options.push(randomWord.word);
+        }
+
+        //stop loop if there are 3 options
+        if (options.length >= 3) {
+          break;
+        }
+
+        //add synonym to options if its not in options and not a synonym to word-answer
+        const randomWordSyn = getRandomElement(allSynonyms); //get new random word for synonym
+        if (randomWordSyn.syn.length > 0) {
+          const randomSynonym = getRandomElement(randomWordSyn.syn);
+          if (!options.includes(randomSynonym) && !randomWordSyn.syn.includes(w.word) && !randomSynonym.includes(' ')) {
+            options.push(randomSynonym);
+          }
+        }
+      }
+      //add correct answer to the options
+      const randomIndex = Math.floor(Math.random() * 4);
+      options.splice(randomIndex, 0, w.word);
+
+      wordsForQuiz.push({...w, options});
+    });
+
+    res.json(wordsForQuiz);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 
 async function createData(req, res) {
   try {
@@ -150,4 +218,4 @@ async function addValidity(req, res) {
 
 }
 
-module.exports = { getData, createData, getFilteredData, addValidity };
+module.exports = { getData, createData, getFilteredData, addValidity, getQuizOptions };

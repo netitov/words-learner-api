@@ -227,7 +227,7 @@ async function checkDictionary({ langs, text }) {
     const result = await response.json();
     return result.def;
   } catch (err) {
-    console.error(err);
+    next(err);
   }
 }
 
@@ -253,6 +253,17 @@ async function translate(req, res) {
   }
 }
 
+async function getSynonyms(word) {
+  try {
+    const response = await fetch(`https://api.datamuse.com/words?rel_syn=${word}`,
+    { method: 'GET' }
+    );
+    const result = await response.json();
+    return { word, syn: result?.map(i => i.word) };
+  } catch (err) {
+    next(err);
+  }
+}
 
 
 //getDictionary()
@@ -263,4 +274,4 @@ async function translate(req, res) {
 //mapGetWordsFromSeries()// if it's empty? and there's the same data
 
 
-module.exports = { mapGetWordsFromSeries, handleWords, getFrequency, translate, checkDictionary };
+module.exports = { mapGetWordsFromSeries, handleWords, getFrequency, translate, checkDictionary, getSynonyms };

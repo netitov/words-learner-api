@@ -66,7 +66,7 @@ async function updateData(req, res, next) {
   try {
     const userId = req.user._id;
     const isDefault = req.body.default;
-    await updateDefaultState(isDefault, userId)
+    await updateDefaultState(isDefault, userId);
 
     const updatedCollection = await Collection.findByIdAndUpdate(
       req.params.collectionId,
