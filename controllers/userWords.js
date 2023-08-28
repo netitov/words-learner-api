@@ -24,7 +24,7 @@ async function createData(req, res, next) {
   try {
     for (let i = 0; i < words.length; i++) {
       const wordObj = words[i];
-      const addedWord = await UserWord.create({ ...wordObj, userId });
+      const addedWord = await UserWord.create({ ...wordObj, results: [], userId });
       addedWords.push(addedWord);
     }
 
@@ -74,7 +74,6 @@ async function updateWordSource(req, res, next) {
   }
 }
 
-
 //remove words array from user learning list
 async function deleteArrayData(req, res, next) {
   try {
@@ -94,8 +93,31 @@ async function deleteArrayData(req, res, next) {
   }
 }
 
+async function addTestResult(req, res, next) {
+  try {
+    const { wordId, value, testId } = req.body;
+
+    const updatedWord = await UserWord.findByIdAndUpdate(
+      wordId,
+      {
+        $push: { results: { value, testId } }
+      },
+      { new: true }
+    );
+
+    if (updatedWord) {
+      res.json(updatedWord);
+    } else {
+      throw new NotFound('Word not found');
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 
 
 module.exports = {
-  getData, createData, deleteData, updateWordSource, deleteArrayData
+  getData, createData, deleteData, updateWordSource, deleteArrayData, addTestResult
 };

@@ -23,6 +23,11 @@ const userWordSchema = new Schema({
   source: {
     type: Array
   },
+  results: [{
+    value: { type: Boolean, required: true },
+    createdAt: { type: Date, default: Date.now },
+    testId: { type: mongoose.Schema.Types.ObjectId, ref: 'testResult' }
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

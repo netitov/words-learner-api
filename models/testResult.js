@@ -7,18 +7,18 @@ const testResultSchema = new Schema({
     required: true,
     ref: 'user',
   },
-  wordId: {
+  /* wordId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: 'userWord',
   },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
   result: {
     type: Boolean,
     required: true,
+  }, */
+  date: {
+    type: Date,
+    default: Date.now,
   },
 });
 

@@ -14,6 +14,7 @@ const wordsRoute = require('./words');
 const usersRoute = require('./users');
 const userWordsRoute = require('./userWords');
 const collectionsRouter = require('./collections');
+const testRouter = require('./testResult');
 const { NotFound } = require('../errors')
 const authMiddleware = require('../middlewares/auth');
 
@@ -30,6 +31,7 @@ router.use('/words', wordsRoute);
 router.use('/users', usersRoute);
 router.use('/userwords', userWordsRoute);
 router.use('/collections', collectionsRouter);
+router.use('/test', testRouter);
 
 router.use('*', authMiddleware, () => {
   throw new NotFound('Page not found');

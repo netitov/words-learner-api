@@ -75,7 +75,7 @@ function getRandomElement(array) {
 }
 
 //get words for quiz
-async function getQuizOptions(req, res) {
+async function getQuizOptions(req, res, next) {
   try {
     const userWords = req.body;
     const excludedWordsArray = userWords.map(i => i.word);
@@ -133,7 +133,6 @@ async function getQuizOptions(req, res) {
     next(error);
   }
 };
-
 
 async function createData(req, res) {
   try {
