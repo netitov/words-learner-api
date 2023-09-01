@@ -74,6 +74,27 @@ async function updateWordSource(req, res, next) {
   }
 }
 
+async function updateWordTranslation(req, res, next) {
+  try {
+    const userId = req.user._id;
+    const { word, translation } = req.body;
+    console.log(word, translation)
+
+    const updatedWord = await UserWord.findOneAndUpdate(
+      { word, userId },
+      { translation },
+      { new: true }
+    );
+    if (!updatedWord) {
+      throw new NotFound('Word not found');
+    }
+    console.log(updatedWord)
+    res.json(updatedWord);
+  } catch (err) {
+    next(err);
+  }
+};
+
 //remove words array from user learning list
 async function deleteArrayData(req, res, next) {
   try {
@@ -119,5 +140,5 @@ async function addTestResult(req, res, next) {
 
 
 module.exports = {
-  getData, createData, deleteData, updateWordSource, deleteArrayData, addTestResult
+  getData, createData, deleteData, updateWordSource, deleteArrayData, addTestResult, updateWordTranslation
 };
