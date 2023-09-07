@@ -16,3 +16,7 @@ node_modules
 
 .env
 .env.production
+
+.eslintrc.js
+.prettierrc.json
+.eslintignore

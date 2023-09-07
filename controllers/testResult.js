@@ -22,9 +22,7 @@ async function createData(req, res, next) {
     //save test result in Test model
     const quizResult = await TestResult.create({ userId });
     res.json(quizResult);
-
   } catch (err) {
-    console.log(err);
     next(err);
   }
 }
@@ -32,7 +30,6 @@ async function createData(req, res, next) {
 async function deleteData(req, res, next) {
   const { testId } = req.params;
   const userId = req.user._id;
-  console.log(testId, userId)
   try {
     const deletedTest = await Collection.findOneAndDelete({ _id: testId, userId });
 
@@ -42,7 +39,6 @@ async function deleteData(req, res, next) {
       res.json(deletedTest);
     }
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
