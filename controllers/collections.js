@@ -3,8 +3,9 @@ const UserWord = require('../models/userWord');
 const { NotFound } = require('../errors');
 
 async function getData(req, res, next) {
+  const userId = req.user._id;
   try {
-    const response = await Collection.find({});
+    const response = await Collection.find({ userId });
     if (!response) {
       throw new NotFound('Collections not found');
     } else {
