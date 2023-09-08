@@ -265,8 +265,9 @@ async function getSynonyms(word) {
   }
 }
 
-
-//getDictionary()
+//call one time to save data on DB
+//getLanguages();
+//getDictionary();
 //handleWords();
 
 //getWordsFromSeries()
