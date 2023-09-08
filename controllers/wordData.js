@@ -4,6 +4,7 @@ const { checkDictionary, getSynonyms } = require('../utils/api');
 const nlp = require('compromise');
 
 async function getData(req, res) {
+  debugger
   const words = req.params.words.split(',');
   try {
     const response = await Words.find({ word: { $in: words } });
@@ -134,7 +135,7 @@ async function getQuizOptions(req, res, next) {
   }
 };
 
-async function createData(req, res) {
+/* async function createData(req, res) {
   try {
     const jsonArray = await csv({
       delimiter: ';',
@@ -161,7 +162,42 @@ async function createData(req, res) {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-};
+}; */
+
+async function createData(req, res) {
+  try {
+    const jsonArray = await csv({
+      delimiter: ';',
+    }).fromFile(req.file.path);
+
+    const batchSize = 1000;
+    const newArr = [];
+
+    //batch the DB requests; file may contains more than 50,000 records
+    for (let i = 0; i < jsonArray.length; i++) {
+      const item = jsonArray[i];
+      const newItem = {
+        word: item.word,
+        pos: item.pos,
+        filmPer: parseFloat(item.filmPer.replace(",", ".")),
+        fr: parseFloat(item.fr.replace(",", ".")),
+        isValid: checkValidity(item.word, item.pos)
+      };
+      newArr.push(newItem);
+
+      if (newArr.length === batchSize || i === jsonArray.length - 1) {
+
+        await Words.insertMany(newArr);
+        newArr.length = 0;
+      }
+    }
+
+    return res.json('Uploaded!');
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
 
 function checkValidity(word, pos) {
   const parsedWord = nlp(word);
